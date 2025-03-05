@@ -32,14 +32,15 @@ public class UserController {
         }
 
         // Encode password and create new user
-        User newUser = new User(user.getId(),
-                user.getUsername(),
-                encoder.encode(user.getPassword()),
-                user.getEmail(),
-                user.getFirstName(),
-                user.getLastName());
+        User newUser = User.builder()
+                            .username(user.getUsername())
+                            .password(encoder.encode(user.getPassword()))
+                            .email(user.getEmail())
+                            .firstName(user.getFirstName())
+                            .lastName(user.getLastName())
+                            .build();
 
-        userRepository.save(newUser);
+        User savedUser = userRepository.save(user);
 
         return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
     }

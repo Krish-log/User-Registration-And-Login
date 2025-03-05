@@ -7,5 +7,11 @@ public class MessageResponse {
         this.message = message;
     }
 
-    // existing fields and methods
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
 }
