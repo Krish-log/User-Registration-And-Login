@@ -11,8 +11,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 @Controller
-@CrossOrigin(origins = "*")
 @RequestMapping("/api/users")
+@CrossOrigin(origins = "*")
 public class UserController {
 
     @Autowired
@@ -23,6 +23,7 @@ public class UserController {
 
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@RequestBody User user) {
+
         if (userRepository.existsByUsername(user.getUsername())) {
             return ResponseEntity.badRequest().body(new MessageResponse("Error: Username is already taken!"));
         }
@@ -40,8 +41,19 @@ public class UserController {
                             .lastName(user.getLastName())
                             .build();
 
-        User savedUser = userRepository.save(user);
-
+        userRepository.save(newUser);
         return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<?> loginUser(@RequestBody User user) {
+        User existingUser = userRepository.findByUsername(user.getUsername())
+                .orElse(null);
+
+        if (existingUser == null || !encoder.matches(user.getPassword(), existingUser.getPassword())) {
+            return ResponseEntity.badRequest().body(new MessageResponse("Error: Invalid username or password!"));
+        }
+
+        return ResponseEntity.ok(new MessageResponse("Login successful!"));
     }
 }
