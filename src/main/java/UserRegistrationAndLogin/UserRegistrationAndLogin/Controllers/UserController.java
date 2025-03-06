@@ -1,16 +1,16 @@
 package UserRegistrationAndLogin.UserRegistrationAndLogin.Controllers;
 
-import UserRegistrationAndLogin.UserRegistrationAndLogin.Model.User;
-import UserRegistrationAndLogin.UserRegistrationAndLogin.Model.LoginRequest;
 import UserRegistrationAndLogin.UserRegistrationAndLogin.Model.MessageResponse;
+import UserRegistrationAndLogin.UserRegistrationAndLogin.Model.User;
 import UserRegistrationAndLogin.UserRegistrationAndLogin.Repositories.UserRepository;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.Optional;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
 @RequestMapping("/api/users")
@@ -19,9 +19,6 @@ public class UserController {
 
     @Autowired
     private UserRepository userRepository;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder; // FIX: Inject PasswordEncoder properly
 
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@RequestBody User user) {
@@ -33,30 +30,21 @@ public class UserController {
             return ResponseEntity.badRequest().body(new MessageResponse("Error: Email is already in use!"));
         }
 
-        // Encode password before saving
-        User newUser = User.builder()
-                .username(user.getUsername())
-                .password(passwordEncoder.encode(user.getPassword())) // FIX: Proper password encoding
-                .email(user.getEmail())
-                .firstName(user.getFirstName())
-                .lastName(user.getLastName())
-                .build();
+        userRepository.save(user);
 
-        userRepository.save(newUser);
         return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> loginUser(@RequestBody LoginRequest loginRequest) {
-        Optional<User> userOptional = userRepository.findByUsername(loginRequest.getUsername());
-
-        if (userOptional.isEmpty()) {
-            return ResponseEntity.badRequest().body(new MessageResponse("Error: Invalid username or password!"));
+    public ResponseEntity<?> loginUser(@RequestBody User user) {
+        if (!userRepository.existsByUsername(user.getUsername())) {
+            return ResponseEntity.badRequest().body(new MessageResponse("Error: Username not found!"));
         }
 
-        User user = userOptional.get();
-        if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
-            return ResponseEntity.badRequest().body(new MessageResponse("Error: Invalid username or password!"));
+        User existingUser = userRepository.findByUsername(user.getUsername()).get();
+
+        if (!existingUser.getPassword().equals(user.getPassword())) {
+            return ResponseEntity.badRequest().body(new MessageResponse("Error: Invalid password!"));
         }
 
         return ResponseEntity.ok(new MessageResponse("User logged in successfully!"));
