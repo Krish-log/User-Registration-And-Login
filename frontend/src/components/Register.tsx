@@ -1,47 +1,65 @@
-import React, { useState, ChangeEvent, FormEvent } from "react";
-import { Link } from "react-router-dom";
-import axios from "axios";
+import { useState, ChangeEvent, FormEvent } from 'react';
+import { Link } from 'react-router-dom';
+import axios from 'axios';
 
-const API_BASE_URL = "http://localhost:8080/api/users";
+const API_BASE_URL = 'http://localhost:8080/api/users';
 
 interface RegisterForm {
   username: string;
   password: string;
-  email: string;
   firstName: string;
   lastName: string;
+  email: string;
+  confirmPassword: string;
 }
 
-const Register: React.FC = () => {
+function Register() {
   const [formData, setFormData] = useState<RegisterForm>({
-    username: "",
-    password: "",
-    email: "",
-    firstName: "",
-    lastName: "",
+    username: '',
+    password: '',
+    confirmPassword: '',
+    firstName: '',
+    lastName: '',
+    email: '',
   });
-  const [message, setMessage] = useState<string>("");
+  
+  const [message, setMessage] = useState<string>('');
 
+  const [error, setError] = useState<string>('');
+  
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
-
+  
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setMessage("");
+    setError("");
+
+    if (formData.password !== formData.confirmPassword) {
+      setError("Passwords do not match!");
+      return;
+    }
+
     try {
-      const response = await axios.post<{ message: string }>(`${API_BASE_URL}/register`, formData, {
-        headers: { "Content-Type": "application/json" },
-      });
+      const response = await axios.post<{ message: string }>(
+        `${API_BASE_URL}/register`,
+        formData,
+        {
+          headers: { "Content-Type": "application/json" },
+        }
+      );
       setMessage(response.data.message);
     } catch (error: any) {
-      setMessage(error.response?.data?.message || "An error occurred");
+      setError(error.response?.data?.message || "An error occurred");
     }
   };
 
   return (
-    <div>
+    <div style={{ maxWidth: "400px", margin: "auto", padding: "20px" }}>
       <h2>Register</h2>
+      {error && <p style={{ color: "red" }}>{error}</p>}
+      {message && <p style={{ color: "green" }}>{message}</p>}
       <form onSubmit={handleSubmit}>
         <input
           type="text"
@@ -60,10 +78,10 @@ const Register: React.FC = () => {
           required
         />
         <input
-          type="email"
-          name="email"
-          placeholder="Email"
-          value={formData.email}
+          type="password"
+          name="confirmPassword"
+          placeholder="Confirm Password"
+          value={formData.confirmPassword}
           onChange={handleChange}
           required
         />
@@ -83,12 +101,21 @@ const Register: React.FC = () => {
           onChange={handleChange}
           required
         />
+        <input
+          type="email"
+          name="email"
+          placeholder="Email"
+          value={formData.email}
+          onChange={handleChange}
+          required
+        />
         <button type="submit">Register</button>
       </form>
-      {message && <p>{message}</p>}
-      <Link to="/login">Already have an account? Login</Link>
+      <p>
+        Already have an account? <Link to="/login">Login</Link>
+      </p>
     </div>
   );
-};
+}
 
 export default Register;
