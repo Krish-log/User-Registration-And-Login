@@ -151,4 +151,4 @@ npm run dev
 Contributions are welcome! Fork the repo, create a feature branch, and submit a pull request.
 
 📧 Contact: [gopi.maganti1998@gmail.com](mailto:gopi.maganti1998@gmail.com)  
-📌 GitHub: [github.com/krish-log](https://github.com/krish-log)
+📌 GitHub: [github.com/gopi-maganti](https://github.com/gopi-maganti)
